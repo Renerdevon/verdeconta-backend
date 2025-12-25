@@ -1,0 +1,77 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+
+  products Product[] // 👈 ADICIONA ISTO
+  lists    PurchaseList[]
+}
+
+model Category {
+  id   String @id @default(uuid())
+  name String @unique
+
+  products Product[]
+}
+
+model Product {
+  id        String   @id @default(uuid())
+  name      String
+  price     Float?
+  createdAt DateTime @default(now())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id])
+
+  items PurchaseItem[] // 👈 ADICIONA ISTO
+}
+
+model PurchaseList {
+  id        String   @id @default(uuid())
+  market    Market
+  isClosed  Boolean  @default(false)
+  total     Float    @default(0)
+  createdAt DateTime @default(now())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  items PurchaseItem[]
+}
+
+model PurchaseItem {
+  id       String     @id @default(uuid())
+  quantity Int
+  price    Float?
+  status   ItemStatus @default(PENDING)
+
+  purchaseListId String
+  purchaseList   PurchaseList @relation(fields: [purchaseListId], references: [id])
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+}
+
+enum Market {
+  PINGO_DOCE
+  MERCADONA
+  CONTINENTE
+}
+
+enum ItemStatus {
+  PENDING
+  BOUGHT
+}
